@@ -13,3 +13,9 @@ services:
         value: app
       - key: FLASK_ENV
         value: production
+    plan: free  # or your chosen plan
+    build:
+      aptPackages:
+        - portaudio19-dev
+        - python3-dev
+        - gcc
