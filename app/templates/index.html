@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Translator</title>
+</head>
+<body>
+    <h1>Translate Audio</h1>
+    <form action="{{ url_for('main.translate_audio') }}" method="post" enctype="multipart/form-data">
+        <label for="source_lang">Source Language:</label>
+        <select name="source_lang" id="source_lang">
+            {% for lang in languages %}
+                <option value="{{ lang }}">{{ lang }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <label for="to_lang">Destination Language:</label>
+        <select name="to_lang" id="to_lang">
+            {% for lang in languages %}
+                <option value="{{ lang }}">{{ lang }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <label for="audio_file">Upload Audio File:</label>
+        <input type="file" name="audio_file" id="audio_file" accept="audio/*">
+        <br><br>
+        <button type="submit" name="submit_type" value="upload">Translate Uploaded Audio</button>
+    </form>
+    <form action="{{ url_for('main.translate_audio') }}" method="post">
+        <label for="source_lang_speak">Source Language:</label>
+        <select name="source_lang" id="source_lang_speak">
+            {% for lang in languages %}
+                <option value="{{ lang }}">{{ lang }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <label for="to_lang_speak">Destination Language:</label>
+        <select name="to_lang" id="to_lang_speak">
+            {% for lang in languages %}
+                <option value="{{ lang }}">{{ lang }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <!-- Add a hidden input field to indicate the action -->
+        <input type="hidden" name="speak" value="true">
+        <button type="submit" name="submit_type" value="speak">Speak and Translate</button>
+    </form>
+</body>
+</html>
