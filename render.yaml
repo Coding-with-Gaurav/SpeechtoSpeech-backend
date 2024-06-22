@@ -4,7 +4,8 @@ services:
     env: python
     region: oregon  # or any preferred region
     buildCommand: |
-      apt-get update && apt-get install -y portaudio19-dev
+      apt-get update && apt-get install -y portaudio19-dev python3-dev
+      pip install --upgrade pip
       pip install -r requirements.txt
     startCommand: gunicorn "app:create_app()"
     envVars:
