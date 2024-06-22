@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: flask-translation-api
+    env: python
+    region: oregon  # or any preferred region
+    buildCommand: |
+      apt-get update && apt-get install -y portaudio19-dev
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_APP
+        value: app
+      - key: FLASK_ENV
+        value: production
