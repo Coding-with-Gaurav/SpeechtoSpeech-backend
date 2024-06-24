@@ -10,4 +10,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(main)
 
+    # Initialize extensions if you have any
+    # e.g., db.init_app(app), migrate.init_app(app, db)
+
     return app

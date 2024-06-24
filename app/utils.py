@@ -1,7 +1,5 @@
 import speech_recognition as sr
 from googletrans import Translator
-from gtts import gTTS
-import os
 
 # A tuple containing all the languages and codes of the language
 dic = ('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 'arabic', 'ar', 
@@ -32,11 +30,17 @@ dic = ('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 'arabic', 'ar',
        'uzbek', 'uz', 'vietnamese', 'vi', 'welsh', 'cy', 'xhosa', 'xh', 
        'yiddish', 'yi', 'yoruba', 'yo', 'zulu', 'zu')
 
-def recognize_speech(audio_path):
+def takecommand(audio_path=None):
     r = sr.Recognizer()
-    with sr.AudioFile(audio_path) as source:
-        print("Processing audio file...")
-        audio = r.record(source)
+    if audio_path:
+        with sr.AudioFile(audio_path) as source:
+            print("Processing audio file...")
+            audio = r.record(source)
+    else:
+        with sr.Microphone() as source:
+            print("Listening...")
+            r.pause_threshold = 1
+            audio = r.listen(source)
 
     try:
         print("Recognizing...")
@@ -57,15 +61,3 @@ def translate_text(text, source_lang_code, to_lang_code):
     translator = Translator()
     text_to_translate = translator.translate(text, src=source_lang_code, dest=to_lang_code)
     return text_to_translate.text
-
-def synthesize_speech(text, lang_code):
-    tts = gTTS(text=text, lang=lang_code)
-    output_path = "output.mp3"
-    tts.save(output_path)
-    return output_path
-
-def get_supported_languages():
-    languages = {}
-    for i in range(0, len(dic), 2):
-        languages[dic[i]] = dic[i + 1]
-    return languages
