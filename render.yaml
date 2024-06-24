@@ -1,21 +1,8 @@
 services:
   - type: web
-    name: flask-translation-api
+    name: my-flask-app
     env: python
-    region: oregon  # or any preferred region
-    buildCommand: |
-      apt-get update && apt-get install -y portaudio19-dev python3-dev gcc
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: gunicorn "app:create_app()"
-    envVars:
-      - key: FLASK_APP
-        value: app
-      - key: FLASK_ENV
-        value: production
-    plan: free  # or your chosen plan
-    build:
-      aptPackages:
-        - portaudio19-dev
-        - python3-dev
-        - gcc
+    buildCommand:
+      - apt-get update && apt-get install -y ffmpeg
+      - pip install -r requirements.txt
+    startCommand: python app.py

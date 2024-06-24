@@ -1,63 +1,64 @@
-from flask import Blueprint, request, jsonify, send_file, render_template
-from .utils import takecommand, translate_text, dic
-from gtts import gTTS
 import os
+from flask import Blueprint, jsonify, request, send_file, current_app, render_template
 from pydub import AudioSegment
+from app.utils import recognize_speech, translate_text, synthesize_speech, get_supported_languages
 
-main = Blueprint('main', __name__)
+bp = Blueprint('routes', __name__)
 
-@main.route('/')
+ALLOWED_EXTENSIONS = {'wav', 'mp3', 'mp4', 'mpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@bp.route('/')
 def index():
-    return render_template('index.html', languages=dic[::2])
+    return render_template('index.html')
 
-@main.route('/api/source-language', methods=['GET'])
-def get_source_languages():
-    return jsonify({'languages': dic[::2]})
+@bp.route('/translate', methods=['POST'])
+def translate_speech():
+    if 'source_language' not in request.form or 'target_language' not in request.form:
+        return jsonify({'error': 'Source and target languages must be specified'}), 400
 
-@main.route('/api/translate', methods=['POST'])
-def translate_audio():
-    if 'source_lang' not in request.form:
-        return jsonify({'error': 'Missing source language'}), 400
+    source_language = request.form['source_language']
+    target_language = request.form['target_language']
 
-    source_lang = request.form['source_lang'].lower()
-    if source_lang not in dic:
-        return jsonify({'error': 'Invalid source language'}), 400
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file uploaded'}), 400
 
-    source_lang_code = dic[dic.index(source_lang) + 1]
+    audio_file = request.files['audio']
+
+    if audio_file.filename == '':
+        return jsonify({'error': 'No file selected for uploading'}), 400
+
+    if not allowed_file(audio_file.filename):
+        return jsonify({'error': 'Invalid file format. Allowed formats are: wav, mp3, mp4'}), 400
     
-    query = None
-    if 'audio_file' in request.files and request.files['audio_file'].filename != '':
-        audio_file = request.files['audio_file']
-        audio_path = 'static/audio.mp3'
+    # Save the uploaded file to a temporary location or directly use it
+    audio_path = os.path.join(current_app.config['UPLOAD_FOLDER'], audio_file.filename)
+    audio_file.save(audio_path)
 
-        os.makedirs(os.path.dirname(audio_path), exist_ok=True)
-        audio_file.save(audio_path)
+    if not os.path.exists(audio_path):
+        return jsonify({'error': 'Failed to save uploaded file'}), 500
 
-        sound = AudioSegment.from_file(audio_path)
-        wav_audio_path = 'static/audio.wav'
-        sound.export(wav_audio_path, format="wav")
+    # Convert audio to wav format using pydub
+    audio = AudioSegment.from_file(audio_path)
+    wav_path = os.path.splitext(audio_path)[0] + '.wav'
+    audio.export(wav_path, format='wav')
 
-        query = takecommand(wav_audio_path)
+    # Process the converted wav audio file
+    try:
+        text = recognize_speech(wav_path)
+        translated_text = translate_text(text, source_language, target_language)
+        output_audio_path = synthesize_speech(translated_text, target_language)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    elif request.form.get('submit_type') == 'speak':
-        query = takecommand()
+    if not os.path.exists(output_audio_path):
+        return jsonify({'error': 'Speech synthesis failed'}), 500
 
-    if query == "None" or query is None:
-        return jsonify({'error': 'Failed to recognize speech'}), 400
+    return send_file(output_audio_path, as_attachment=True)
 
-    to_lang = request.form.get('to_lang', 'english').lower()
-    if to_lang not in dic:
-        return jsonify({'error': 'Invalid destination language'}), 400
-
-    to_lang_code = dic[dic.index(to_lang) + 1]
-
-    translated_text = translate_text(query, source_lang_code, to_lang_code)
-
-    tts = gTTS(text=translated_text, lang=to_lang_code, slow=False)
-    tts.save('static/translated_audio.mp3')
-
-    return jsonify({'translated_text': translated_text})
-
-@main.route('/api/play-translated', methods=['GET'])
-def play_translated_audio():
-    return send_file('static/translated_audio.mp3', as_attachment=True)
+@bp.route('/languages', methods=['GET'])
+def supported_languages():
+    languages = get_supported_languages()
+    return jsonify(languages)
