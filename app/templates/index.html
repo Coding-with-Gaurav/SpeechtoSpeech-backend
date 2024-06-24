@@ -1,50 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Translator</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Translate Audio</h1>
-    <form action="{{ url_for('main.translate_audio') }}" method="post" enctype="multipart/form-data">
-        <label for="source_lang">Source Language:</label>
-        <select name="source_lang" id="source_lang">
-            {% for lang in languages %}
+
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold mb-4 text-center">Translate Audio</h1>
+
+        <!-- Upload Form -->
+        <form action="{{ url_for('main.translate_audio') }}" method="post" enctype="multipart/form-data" class="mb-6">
+            <label for="source_lang" class="block mb-2">Source Language:</label>
+            <select name="source_lang" id="source_lang" class="w-full px-3 py-2 mb-3 border rounded-lg">
+                {% for lang in languages %}
                 <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        <label for="to_lang">Destination Language:</label>
-        <select name="to_lang" id="to_lang">
-            {% for lang in languages %}
+                {% endfor %}
+            </select>
+
+            <label for="to_lang" class="block mb-2">Destination Language:</label>
+            <select name="to_lang" id="to_lang" class="w-full px-3 py-2 mb-3 border rounded-lg">
+                {% for lang in languages %}
                 <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        <label for="audio_file">Upload Audio File:</label>
-        <input type="file" name="audio_file" id="audio_file" accept="audio/*">
-        <br><br>
-        <button type="submit" name="submit_type" value="upload">Translate Uploaded Audio</button>
-    </form>
-    <form action="{{ url_for('main.translate_audio') }}" method="post">
-        <label for="source_lang_speak">Source Language:</label>
-        <select name="source_lang" id="source_lang_speak">
-            {% for lang in languages %}
+                {% endfor %}
+            </select>
+
+            <label for="audio_file" class="block mb-2">Upload Audio File:</label>
+            <input type="file" name="audio_file" id="audio_file" accept="audio/*" class="mb-3">
+
+            <button type="submit" name="submit_type" value="upload" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Translate Uploaded Audio
+            </button>
+        </form>
+
+        <!-- Speak Form -->
+        <form action="{{ url_for('main.translate_audio') }}" method="post" class="mb-6">
+            <label for="source_lang_speak" class="block mb-2">Source Language:</label>
+            <select name="source_lang" id="source_lang_speak" class="w-full px-3 py-2 mb-3 border rounded-lg">
+                {% for lang in languages %}
                 <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        <label for="to_lang_speak">Destination Language:</label>
-        <select name="to_lang" id="to_lang_speak">
-            {% for lang in languages %}
+                {% endfor %}
+            </select>
+
+            <label for="to_lang_speak" class="block mb-2">Destination Language:</label>
+            <select name="to_lang" id="to_lang_speak" class="w-full px-3 py-2 mb-3 border rounded-lg">
+                {% for lang in languages %}
                 <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        <!-- Add a hidden input field to indicate the action -->
-        <input type="hidden" name="speak" value="true">
-        <button type="submit" name="submit_type" value="speak">Speak and Translate</button>
-    </form>
+                {% endfor %}
+            </select>
+
+            <input type="hidden" name="speak" value="true">
+            <button type="submit" name="submit_type" value="speak" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Speak and Translate
+            </button>
+        </form>
+
+        <!-- Error Handling -->
+        {% if error %}
+        <p class="text-red-500 text-sm">{{ error }}</p>
+        {% endif %}
+    </div>
 </body>
+
 </html>

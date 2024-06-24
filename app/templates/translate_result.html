@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Result</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold mb-4 text-center">Translation Result</h1>
+        <p class="text-lg text-center mb-6">{{ translated_text }}</p>
+
+        <!-- Audio player -->
+        <div class="flex items-center justify-center mb-6">
+            <audio id="translated_audio" controls class="w-full">
+                <source src="{{ url_for('main.play_translated_audio') }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <div class="flex justify-center">
+            <button onclick="playAudio()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Play Translated Audio
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function playAudio() {
+            var audio = document.getElementById('translated_audio');
+            audio.play();
+        }
+    </script>
+</body>
+
+</html>
