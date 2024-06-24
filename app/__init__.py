@@ -7,6 +7,7 @@ def create_app():
     # Load configuration
     app.config.from_object('config.ProductionConfig')
     # app.config.from_object('config.DevelopmentConfig')
-    # Register blueprints
+    
+    
     app.register_blueprint(main)
     return app

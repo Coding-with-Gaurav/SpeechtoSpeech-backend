@@ -10,7 +10,7 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @main.route('/')
 def index():
-    languages = dic[::2]  
+    languages = dic[::2]  # Assuming dic is defined in utils.py and contains language options
     return render_template('index.html', languages=languages)
 
 @main.route('/api/source-language', methods=['GET'])
