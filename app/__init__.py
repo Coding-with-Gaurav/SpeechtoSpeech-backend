@@ -5,8 +5,8 @@ def create_app():
     app = Flask(__name__)
 
     # Load configuration
-    # app.config.from_object('config.ProductionConfig')
-    app.config.from_object('config.DevelopmentConfig')
+    app.config.from_object('config.ProductionConfig')
+    # app.config.from_object('config.DevelopmentConfig')
     # Register blueprints
     app.register_blueprint(main)
     return app
