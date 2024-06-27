@@ -3,6 +3,7 @@ from .utils import takecommand, translate_text, dic
 from gtts import gTTS
 import os
 from pydub import AudioSegment
+import traceback
 
 main = Blueprint('main', __name__)
 
@@ -17,6 +18,7 @@ def index():
 def get_source_languages():
     languages = dic[::2]  
     return render_template('source_languages.html', languages=languages)
+
 
 @main.route('/api/translate', methods=['POST'])
 def translate_audio():
@@ -46,9 +48,11 @@ def translate_audio():
             wav_audio_path = os.path.join(ROOT_DIR, 'static', 'audio.wav')
             sound.export(wav_audio_path, format="wav")
 
+            print("Processing audio file...")
             query = takecommand(wav_audio_path)
 
         elif request.form.get('submit_type') == 'speak':
+            print("Listening for speech...")
             query = takecommand()
 
         if query == "None" or query is None:
@@ -62,15 +66,19 @@ def translate_audio():
 
         to_lang_code = dic[dic.index(to_lang) + 1]
 
+        print(f"Recognized text: {query}")
         translated_text = translate_text(query, source_lang_code, to_lang_code)
 
         tts = gTTS(text=translated_text, lang=to_lang_code, slow=False)
         tts.save(os.path.join(ROOT_DIR, 'static', 'translated_audio.mp3'))
 
         return render_template('translate_result.html', translated_text=translated_text)
+
     except Exception as e:
         print(f"Unexpected error: {e}")
+        print(traceback.format_exc())  # Print traceback for detailed error information
         return render_template('error.html', error='An unexpected error occurred'), 500
+
 
 
 @main.route('/api/play-translated', methods=['GET'])
