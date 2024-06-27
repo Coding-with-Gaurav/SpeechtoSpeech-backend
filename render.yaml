@@ -1,8 +1,9 @@
 services:
   - type: web
-    name: my-flask-app
-    env: anaconda
-    buildCommand:
-      - apt-get update && apt-get install -y ffmpeg
-      - pip install -r requirements.txt
+    name: speechtospeech
+    env: python
+    buildCommand: |
+      apt-get update
+      apt-get install -y ffmpeg
+      pip install -r requirements.txt
     startCommand: gunicorn run:app
