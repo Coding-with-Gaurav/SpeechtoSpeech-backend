@@ -1,5 +1,8 @@
 import speech_recognition as sr
 from googletrans import Translator
+import os 
+
+from pydub import AudioSegment
 
 # A tuple containing all the languages and codes of the language
 dic = ('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 'arabic', 'ar', 
@@ -57,6 +60,40 @@ def takecommand(audio_path=None):
         return "None"
     return query
 
+def recognize_speech(audio_file):
+    r = sr.Recognizer()
+    audio_text = ""
+
+    # Check file extension to determine format
+    _, file_extension = os.path.splitext(audio_file)
+
+    if file_extension.lower() == '.wav':
+        with sr.AudioFile(audio_file) as source:
+            audio = r.record(source)
+    elif file_extension.lower() in ['.mp3', '.mp4', '.MPEG']:
+        # Convert non-WAV formats to WAV for processing
+        sound = AudioSegment.from_file(audio_file)
+        audio_path = os.path.splitext(audio_file)[0] + '.wav'
+        sound.export(audio_path, format="wav")
+        
+        with sr.AudioFile(audio_path) as source:
+            audio = r.record(source)
+        
+        # Clean up temporary WAV file
+        os.remove(audio_path)
+    else:
+        raise ValueError("Unsupported file format. Supported formats: WAV, MP3, MP4, MPEG")
+
+    try:
+        audio_text = r.recognize_google(audio)
+    except sr.UnknownValueError:
+        print("Google Speech Recognition could not understand the audio")
+    except sr.RequestError as e:
+        print(f"Could not request results from Google Speech Recognition service; {e}")
+    except Exception as e:
+        print(f"An error occurred during speech recognition: {e}")
+
+    return audio_text
 def translate_text(text, source_lang_code, to_lang_code):
     translator = Translator()
     text_to_translate = translator.translate(text, src=source_lang_code, dest=to_lang_code)
