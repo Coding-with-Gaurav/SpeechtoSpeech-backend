@@ -1,7 +1,7 @@
 import speech_recognition as sr
 from googletrans import Translator
 import os 
-
+from pydub.playback import play
 from pydub import AudioSegment
 
 # A tuple containing all the languages and codes of the language
