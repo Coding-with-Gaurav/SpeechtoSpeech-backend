@@ -13,32 +13,8 @@
     <div class="max-w-lg w-full bg-white p-8 rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold mb-4 text-center">Translate Audio</h1>
 
-        <!-- Upload Form -->
-        <form action="{{ url_for('main.translate_audio') }}" method="post" enctype="multipart/form-data" class="mb-6">
-            <label for="source_lang" class="block mb-2">Source Language:</label>
-            <select name="source_lang" id="source_lang" class="w-full px-3 py-2 mb-3 border rounded-lg">
-                {% for lang in languages %}
-                <option value="{{ lang }}">{{ lang }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="to_lang" class="block mb-2">Destination Language:</label>
-            <select name="to_lang" id="to_lang" class="w-full px-3 py-2 mb-3 border rounded-lg">
-                {% for lang in languages %}
-                <option value="{{ lang }}">{{ lang }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="audio_file" class="block mb-2">Upload Audio File:</label>
-            <input type="file" name="audio_file" id="audio_file" accept=".mp3,.wav,.mp4,.mpeg" class="mb-3">
-
-            <button type="submit" name="submit_type" value="upload" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
-                Translate Uploaded Audio
-            </button>
-        </form>
-
         <!-- Speak Form -->
-        <form action="{{ url_for('main.translate_audio') }}" method="post" class="mb-6">
+        <form id="speak-form" class="mb-6">
             <label for="source_lang_speak" class="block mb-2">Source Language:</label>
             <select name="source_lang" id="source_lang_speak" class="w-full px-3 py-2 mb-3 border rounded-lg">
                 {% for lang in languages %}
@@ -46,6 +22,13 @@
                 {% endfor %}
             </select>
 
+            <button type="button" id="start-recording" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Speak
+            </button>
+        </form>
+
+        <!-- Select Translation Language -->
+        <div id="translation-options" class="hidden">
             <label for="to_lang_speak" class="block mb-2">Destination Language:</label>
             <select name="to_lang" id="to_lang_speak" class="w-full px-3 py-2 mb-3 border rounded-lg">
                 {% for lang in languages %}
@@ -53,17 +36,82 @@
                 {% endfor %}
             </select>
 
-            <input type="hidden" name="speak" value="true">
-            <button type="submit" name="submit_type" value="speak" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
-                Speak and Translate
+            <button type="button" id="translate-button" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Translate
             </button>
-        </form>
+
+            <button type="button" id="reset-button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Reset
+            </button>
+        </div>
+
+        <!-- Display recognized and translated text -->
+        <div id="result" class="mt-4">
+            <p id="recognized-text" class="text-lg"></p>
+            <p id="translated-text" class="text-lg font-bold"></p>
+            <audio id="translated-audio" controls></audio>
+        </div>
 
         <!-- Error Handling -->
         {% if error %}
         <p class="text-red-500 text-sm">{{ error }}</p>
         {% endif %}
     </div>
+
+    <script>
+        document.getElementById('start-recording').addEventListener('click', function() {
+            fetch('/api/start-recording', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('recognized-text').textContent = 'Recognized Text: ' + data.recognized_text;
+                    document.getElementById('translation-options').classList.remove('hidden');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('translate-button').addEventListener('click', function() {
+            const formData = new FormData();
+            formData.append('source_lang', document.getElementById('source_lang_speak').value);
+            formData.append('to_lang', document.getElementById('to_lang_speak').value);
+            fetch('/api/translate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('translated-text').textContent = 'Translated Text: ' + data.translated_text;
+                    const audio = document.getElementById('translated-audio');
+                    audio.src = '/' + data.audio_path + '?' + new Date().getTime(); // Force reload by appending timestamp
+                    audio.load();  // Reload the audio element to ensure the new file is played
+                    audio.play();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('reset-button').addEventListener('click', function() {
+            fetch('/api/reset', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById('recognized-text').textContent = '';
+                document.getElementById('translated-text').textContent = '';
+                document.getElementById('translation-options').classList.add('hidden');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
 </body>
 
 </html>

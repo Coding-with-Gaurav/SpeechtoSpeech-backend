@@ -79,7 +79,7 @@ def recognize_speech(audio_file):
         with sr.AudioFile(audio_path) as source:
             audio = r.record(source)
         
-        # Clean up temporary WAV file
+        
         os.remove(audio_path)
     else:
         raise ValueError("Unsupported file format. Supported formats: WAV, MP3, MP4, MPEG")
