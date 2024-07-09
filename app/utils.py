@@ -1,9 +1,9 @@
+import os
 import speech_recognition as sr
 from googletrans import Translator
-import os 
 from pydub import AudioSegment
 
-# A tuple containing all the languages and codes of the language
+# Tuple containing all the languages and their codes
 dic = ('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 'arabic', 'ar', 
        'armenian', 'hy', 'azerbaijani', 'az', 'basque', 'eu', 'belarusian', 'be', 
        'bengali', 'bn', 'bosnian', 'bs', 'bulgarian', 'bg', 'catalan', 'ca', 
@@ -31,30 +31,6 @@ dic = ('afrikaans', 'af', 'albanian', 'sq', 'amharic', 'am', 'arabic', 'ar',
        'th', 'turkish', 'tr', 'ukrainian', 'uk', 'urdu', 'ur', 'uyghur', 'ug', 
        'uzbek', 'uz', 'vietnamese', 'vi', 'welsh', 'cy', 'xhosa', 'xh', 
        'yiddish', 'yi', 'yoruba', 'yo', 'zulu', 'zu')
-
-def takecommand(audio_path=None):
-    r = sr.Recognizer()
-    if audio_path:
-        with sr.AudioFile(audio_path) as source:
-            print("Processing audio file...")
-            audio = r.record(source)
-    else:
-        raise NotImplementedError("Microphone input is not supported without PyAudio")
-
-    try:
-        print("Recognizing...")
-        query = r.recognize_google(audio, language='en-US')
-        print(f"The User said: {query}\n")
-    except sr.UnknownValueError:
-        print("Google Speech Recognition could not understand the audio")
-        return "None"
-    except sr.RequestError as e:
-        print(f"Could not request results from Google Speech Recognition service; {e}")
-        return "None"
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return "None"
-    return query
 
 def recognize_speech(audio_file):
     r = sr.Recognizer()
@@ -90,7 +66,12 @@ def recognize_speech(audio_file):
 
     return audio_text
 
-def translate_text(text, source_lang_code, to_lang_code):
+def translate_text(audio_file, source_lang_code, to_lang_code):
     translator = Translator()
-    text_to_translate = translator.translate(text, src=source_lang_code, dest=to_lang_code)
-    return text_to_translate.text
+    recognized_text = recognize_speech(audio_file)
+
+    if recognized_text:
+        translated_text = translator.translate(recognized_text, src=source_lang_code, dest=to_lang_code).text
+        return translated_text
+    else:
+        return ""
