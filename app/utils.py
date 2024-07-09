@@ -1,7 +1,6 @@
 import speech_recognition as sr
 from googletrans import Translator
 import os 
-from pydub.playback import play
 from pydub import AudioSegment
 
 # A tuple containing all the languages and codes of the language
@@ -40,48 +39,7 @@ def takecommand(audio_path=None):
             print("Processing audio file...")
             audio = r.record(source)
     else:
-        try:
-            # Use pydub for microphone input
-            import pyaudio
-            import wave
-            import io
-            import time
-
-            FORMAT = pyaudio.paInt16
-            CHANNELS = 1
-            RATE = 16000
-            CHUNK = 1024
-            RECORD_SECONDS = 5
-
-            audio = pyaudio.PyAudio()
-            stream = audio.open(format=FORMAT, channels=CHANNELS,
-                                rate=RATE, input=True,
-                                frames_per_buffer=CHUNK)
-            print("Recording...")
-            frames = []
-            for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-                data = stream.read(CHUNK)
-                frames.append(data)
-            print("Finished recording.")
-
-            stream.stop_stream()
-            stream.close()
-            audio.terminate()
-
-            # Save the recorded data as a WAV file
-            wave_output_filename = "output.wav"
-            wf = wave.open(wave_output_filename, 'wb')
-            wf.setnchannels(CHANNELS)
-            wf.setsampwidth(audio.get_sample_size(FORMAT))
-            wf.setframerate(RATE)
-            wf.writeframes(b''.join(frames))
-            wf.close()
-
-            with sr.AudioFile(wave_output_filename) as source:
-                audio = r.record(source)
-        except Exception as e:
-            print(f"An error occurred while recording audio: {e}")
-            return "None"
+        raise NotImplementedError("Microphone input is not supported without PyAudio")
 
     try:
         print("Recognizing...")
@@ -98,7 +56,6 @@ def takecommand(audio_path=None):
         return "None"
     return query
 
-
 def recognize_speech(audio_file):
     r = sr.Recognizer()
     audio_text = ""
@@ -109,7 +66,7 @@ def recognize_speech(audio_file):
     if file_extension.lower() == '.wav':
         with sr.AudioFile(audio_file) as source:
             audio = r.record(source)
-    elif file_extension.lower() in ['.mp3', '.mp4', '.MPEG']:
+    elif file_extension.lower() in ['.mp3', '.mp4', '.mpeg']:
         # Convert non-WAV formats to WAV for processing
         sound = AudioSegment.from_file(audio_file)
         audio_path = os.path.splitext(audio_file)[0] + '.wav'
@@ -117,7 +74,6 @@ def recognize_speech(audio_file):
         
         with sr.AudioFile(audio_path) as source:
             audio = r.record(source)
-        
         
         os.remove(audio_path)
     else:
@@ -133,6 +89,7 @@ def recognize_speech(audio_file):
         print(f"An error occurred during speech recognition: {e}")
 
     return audio_text
+
 def translate_text(text, source_lang_code, to_lang_code):
     translator = Translator()
     text_to_translate = translator.translate(text, src=source_lang_code, dest=to_lang_code)
