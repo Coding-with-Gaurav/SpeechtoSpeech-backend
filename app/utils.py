@@ -40,10 +40,48 @@ def takecommand(audio_path=None):
             print("Processing audio file...")
             audio = r.record(source)
     else:
-        with sr.Microphone() as source:
-            print("Listening...")
-            r.pause_threshold = 1
-            audio = r.listen(source)
+        try:
+            # Use pydub for microphone input
+            import pyaudio
+            import wave
+            import io
+            import time
+
+            FORMAT = pyaudio.paInt16
+            CHANNELS = 1
+            RATE = 16000
+            CHUNK = 1024
+            RECORD_SECONDS = 5
+
+            audio = pyaudio.PyAudio()
+            stream = audio.open(format=FORMAT, channels=CHANNELS,
+                                rate=RATE, input=True,
+                                frames_per_buffer=CHUNK)
+            print("Recording...")
+            frames = []
+            for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+                data = stream.read(CHUNK)
+                frames.append(data)
+            print("Finished recording.")
+
+            stream.stop_stream()
+            stream.close()
+            audio.terminate()
+
+            # Save the recorded data as a WAV file
+            wave_output_filename = "output.wav"
+            wf = wave.open(wave_output_filename, 'wb')
+            wf.setnchannels(CHANNELS)
+            wf.setsampwidth(audio.get_sample_size(FORMAT))
+            wf.setframerate(RATE)
+            wf.writeframes(b''.join(frames))
+            wf.close()
+
+            with sr.AudioFile(wave_output_filename) as source:
+                audio = r.record(source)
+        except Exception as e:
+            print(f"An error occurred while recording audio: {e}")
+            return "None"
 
     try:
         print("Recognizing...")
@@ -59,6 +97,7 @@ def takecommand(audio_path=None):
         print(f"An error occurred: {e}")
         return "None"
     return query
+
 
 def recognize_speech(audio_file):
     r = sr.Recognizer()
