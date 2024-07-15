@@ -30,7 +30,7 @@ def recognize_speech_endpoint():
         audio_file = request.files['file']
 
         # Save the uploaded audio file
-        audio_path = os.path.join(ROOT_DIR, 'uploads', audio_file.filename)
+        audio_path = os.path.join(UPLOAD_FOLDER, audio_file.filename)
         audio_file.save(audio_path)
 
         # Recognize speech from the uploaded audio file
