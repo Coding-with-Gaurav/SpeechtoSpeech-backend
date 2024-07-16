@@ -20,6 +20,22 @@ def get_source_languages():
     languages = dic[::2]
     return render_template('source_languages.html', languages=languages)
 
+# Set the root directory and upload folder
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(ROOT_DIR, 'uploads')
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Dummy speech recognition function for demonstration purposes
+def recognize_speech(audio_path):
+    # Placeholder for actual speech recognition logic
+    # Replace this with actual implementation
+    return "Recognized speech text from audio"
+
+current_audio_path = None
+
 @main.route('/api/recognize-speech', methods=['POST'])
 def recognize_speech_endpoint():
     global current_audio_path
@@ -36,7 +52,7 @@ def recognize_speech_endpoint():
         print(f"Received audio file: {audio_file.filename}")
 
         # Save the uploaded audio file
-        audio_path = os.path.join(ROOT_DIR, 'uploads', audio_file.filename)
+        audio_path = os.path.join(UPLOAD_FOLDER, audio_file.filename)
         audio_file.save(audio_path)
         print(f"Saved audio file to {audio_path}")
 
