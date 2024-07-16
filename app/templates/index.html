@@ -27,6 +27,15 @@
             </button>
         </form>
 
+        <!-- Upload Audio Form -->
+        <form id="upload-form" class="mb-6">
+            <label for="audio-file" class="block mb-2">Upload Audio File:</label>
+            <input type="file" id="audio-file" name="file" class="w-full px-3 py-2 mb-3 border rounded-lg">
+            <button type="button" id="upload-audio" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md focus:outline-none">
+                Upload
+            </button>
+        </form>
+
         <!-- Select Translation Language -->
         <div id="translation-options" class="hidden">
             <label for="to_lang_speak" class="block mb-2">Destination Language:</label>
@@ -35,7 +44,7 @@
                 <option value="{{ lang }}">{{ lang }}</option>
                 {% endfor %}
             </select>
-
+            
             <button type="button" id="translate-button" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md focus:outline-none">
                 Translate
             </button>
@@ -75,10 +84,32 @@
             .catch(error => console.error('Error:', error));
         });
 
+        document.getElementById('upload-audio').addEventListener('click', function() {
+            const audioFile = document.getElementById('audio-file').files[0];
+            const formData = new FormData();
+            formData.append('file', audioFile);
+
+            fetch('/api/recognize-speech', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('recognized-text').textContent = 'Recognized Text: ' + data.recognized_text;
+                    document.getElementById('translation-options').classList.remove('hidden');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
         document.getElementById('translate-button').addEventListener('click', function() {
             const formData = new FormData();
             formData.append('source_lang', document.getElementById('source_lang_speak').value);
             formData.append('to_lang', document.getElementById('to_lang_speak').value);
+
             fetch('/api/translate', {
                 method: 'POST',
                 body: formData

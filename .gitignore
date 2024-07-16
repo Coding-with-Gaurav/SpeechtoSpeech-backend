@@ -105,3 +105,6 @@ static/
 audio.mp3/
 audio.wav/
 translated_audio.mp3/
+.mpeg/
+.mp4/
+.mp3
